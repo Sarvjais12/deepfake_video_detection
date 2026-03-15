@@ -27,7 +27,7 @@ class DeepfakeModel(nn.Module):
 
 class ProFrameExtractor:
     def __init__(self, size=224): self.size = size
-    def get_frames(self, path, num_frames=15):
+    def get_frames(self, path, num_frames=45):
         cap = cv2.VideoCapture(path)
         frames = []
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
