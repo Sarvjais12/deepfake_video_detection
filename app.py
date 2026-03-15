@@ -49,7 +49,7 @@ class ProFrameExtractor:
 
 # --- INITIALIZATION ---
 # Update this string to match the file you upload to the Space
-MODEL_PATH = "deepfake_model_e9.pth" 
+MODEL_PATH = "deepfake_model_e10.pth" 
 device = torch.device('cpu') # Hugging Face free tier uses CPU
 
 model = DeepfakeModel().to(device)
