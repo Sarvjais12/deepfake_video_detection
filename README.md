@@ -34,7 +34,7 @@ The system processes video files through a multi-stage spatiotemporal pipeline:
 * **Spatial Backbone**: EfficientNet-B0
 * **Temporal Network**: Bi-LSTM + Attention layer
 * **Video Processing**: OpenCV, NumPy
-* **Interface**: Gradio (via Hugging Face Spaces)
+* **Interface**: Gradio (via Hugging Face Spaces) :https://huggingface.co/spaces/Sarvjais12/Deepfake_Video_Detection
 
 ---
 
