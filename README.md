@@ -1,52 +1,97 @@
-🕵️‍♂️ Spatiotemporal Deepfake Detection Pipeline
-A production-ready Deep Learning pipeline deployed on Hugging Face, engineered to detect manipulated video content. This architecture moves beyond standard frame-by-frame spatial classification by implementing a Temporal Attention Mechanism over a Bidirectional LSTM, allowing the network to identify microscopic, unnatural facial movements and blending boundaries over time.
+<div align="center">
 
-🚀 Live Demo
-Try the model in your browser: Launch Hugging Face Space
+🔴 Spatiotemporal Deepfake Detection Engine ⬛
+An advanced, production-ready Deep Learning pipeline engineered to detect manipulated video content by analyzing spatial artifacts and temporal inconsistencies.
 
-🧠 System Architecture
-The pipeline processes .mp4 files through a custom extraction protocol and a hybrid feature-extraction network:
+</div>
 
-Smart Frame Extraction (OpenCV): Dynamically samples a sequence of 15 equidistant frames across the video duration, utilizing center-cropping to isolate primary subjects while minimizing VRAM overhead.
+🩸 The Engineering Journey: From V1 to V2.1
+Building a robust deepfake detector is an ongoing battle against Domain Shift. This repository documents the evolution of the model architecture and the training pipeline to handle increasingly complex synthetic media.
 
-Spatial Backbone (EfficientNet-B0): Acts as the primary feature extractor.
+Phase 1: The Baseline (V1)
+The initial model utilized a strictly frozen ImageNet backbone (EfficientNet-B0) paired with a Bi-LSTM. While it achieved an impressive 0.38 validation loss, it suffered from severe overfitting to the dataset's specific video compression algorithms. It could catch standard manipulations but was blind to high-fidelity, Hollywood-grade deepfakes (like the infamous Morgan Freeman deepfake) where spatial glitches were manually smoothed out.
 
-Engineering Note: Instead of using fully frozen ImageNet weights, the top blocks (7 and above) are unfrozen during training. This allows the CNN to learn dataset-specific deepfake artifacts (like GAN-generated jawline blurring) while retaining generalized edge detection in the lower layers.
+Phase 2: Domain-Shift Resilience & Smart Unfreezing (V2.1)
+To force the model to learn universal deepfake mechanics (e.g., temporal jitter, blending boundaries) rather than memorizing dataset compression, the pipeline was overhauled with the following techniques:
 
-Temporal Processing (Bi-LSTM): A 2-layer Bidirectional LSTM (hidden size: 256) analyzes the temporal sequence of the 15 extracted spatial feature vectors to detect jitter and unnatural micro-expressions.
+Stochastic Digital Noise: Injecting a customized 2% torch.randn_like static noise layer during the forward pass to destroy easy spatial clues.
 
-Attention Mechanism: Dynamically assigns weighted importance to specific frames in the sequence, forcing the classifier to focus heavily on the exact frames where deepfake glitches manifest.
+Partial Backbone Unfreezing: The top layers (Block 7+) of the EfficientNet were unfrozen, allowing the CNN to actively learn GAN-generated jawline blurring while the base retained edge detection.
 
-🔬 Training Dynamics & Generalization
-Training deepfake detectors on static datasets often leads to severe Domain Shift (the model memorizes dataset-specific video compression rather than actual facial manipulation). To combat this, the V2.1 training loop introduces strict regularization:
+Dynamic Learning Rate: Implemented a ReduceLROnPlateau scheduler to stabilize the unfreezing process and prevent catastrophic forgetting of the ImageNet weights.
 
-Stochastic Noise Injection: A custom torch.randn_like layer injects 2% digital static over the tensors during the forward pass. This aggressively destroys standard dataset compression artifacts, forcing the EfficientNet blocks to hunt for structural deepfake flaws.
+🧠 Core Architecture
+The system processes 15 equidistant frames through a hybrid CNN + RNN + Attention pipeline.
 
-Dynamic Learning Rate: Utilizes ReduceLROnPlateau (factor=0.5, patience=2) to stabilize the partial CNN unfreezing, ensuring the loss landscape converges smoothly without catastrophic forgetting of the pre-trained ImageNet weights.
+Python
+import torch
+import torch.nn as nn
+from torchvision import models
 
-Spatial Augmentation: 50% randomized horizontal tensor flipping to prevent background and lighting memorization.
+class DeepfakeModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Spatial Feature Extractor
+        base = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
+        self.feature_extractor = base.features 
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        
+        # Temporal Sequence Analyzer
+        self.lstm = nn.LSTM(1280, 256, num_layers=2, batch_first=True, bidirectional=True)
+        
+        # Temporal Attention Mechanism
+        self.attention = nn.Sequential(
+            nn.Linear(512, 128), 
+            nn.Tanh(), 
+            nn.Linear(128, 1)
+        )
+        
+        # Binary Classifier
+        self.classifier = nn.Linear(512, 1)
+        
+    def forward(self, x):
+        b, s, c, h, w = x.shape
+        x = x.view(b * s, c, h, w)
+        
+        # Extract features per frame
+        f = self.pool(self.feature_extractor(x)).view(b, s, 1280)
+        
+        # Analyze temporal movement
+        lstm_out, _ = self.lstm(f)
+        
+        # Apply attention to critical frames
+        att_weights = torch.softmax(self.attention(lstm_out), dim=1)
+        context = torch.sum(att_weights * lstm_out, dim=1)
+        
+        return self.classifier(context)
+⚙️ Advanced Data Augmentation & Extraction
+To maintain VRAM efficiency and feed the Bi-LSTM a dense temporal sequence, a custom ProFrameExtractor was built using OpenCV to intelligently sample and center-crop frames. During training, tensors are aggressively augmented.
 
-💻 Local Setup & Inference
-1. Clone the repository & Install dependencies
+Python
+# V2.1 Augmentation Protocol Snippet
+if self.is_train:
+    # 50% Randomized Horizontal Mirroing
+    if random.random() > 0.5: 
+        frames_tensor = torch.flip(frames_tensor, dims=[3])
+        
+    # 2% Noise Injection to combat dataset memorization
+    noise = torch.randn_like(frames_tensor) * 0.02
+    frames_tensor = torch.clamp(frames_tensor + noise, 0, 1) 
+🚀 Live Inference Deployment
+The finalized v2_1_deepfake_model_e10.pth weights are currently serving inference in real-time via a custom Gradio API hosted on Hugging Face Spaces.
+
+Test the Model: 🔴 Launch Deepfake Video Detection Space 
+
+Local Setup
+To run the inference server on your own hardware:
 
 Bash
 git clone https://github.com/sarvjais12/deepfake-detection.git
 cd deepfake-detection
 pip install -r requirements.txt
-2. Download Weights
-Pull the pre-trained weights (.pth file) from the Hugging Face repository and place them in the root directory.
-
-3. Launch the Gradio Server
-
-Bash
 python app.py
-🗺️ Roadmap & Future Iterations
-[x] Initial PyTorch training on Kaggle Deep Fake Detection subset.
+<div align="center">
 
-[x] Integrate Bi-LSTM + Attention architecture.
+Engineered and trained by sarvjais12.
 
-[x] Deploy interactive inference API via Hugging Face Spaces.
-
-[ ] V3.0: Fine-tune the current architecture on the Celeb-DF dataset to improve zero-shot generalization against high-fidelity, Hollywood-grade deepfakes (e.g., the Morgan Freeman deepfake).
-
-Built and deployed by sarvjais12.
+</div>
