@@ -52,5 +52,3 @@ When tested against different tiers of synthetic media:
 Try it out on Hugging Face Spaces: [Deepfake Video Detection](https://huggingface.co/spaces/Sarvjais12/Deepfake_Video_Detection)
 
 ---
-
-How does this formatting feel compared to the RAG project? If you want to tweak any of the bullet points under the Sample Use Case, just let me know!
