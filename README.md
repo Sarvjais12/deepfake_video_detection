@@ -1,5 +1,5 @@
 
-# 🕵️‍♂️ Spatiotemporal Deepfake Engine (PyTorch + Bi-LSTM)
+#  Spatiotemporal Deepfake Engine (PyTorch + Bi-LSTM)
 
 ### **Advanced Video Manipulation Detection with Temporal Attention**
 
@@ -7,7 +7,7 @@ This project is an advanced deep learning implementation developed to solve the 
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 * **Domain-Shift Resilience (V2.1)**: Solved the dataset memorization problem by injecting 2% digital static noise and using 50% randomized horizontal flipping during training.
 * **Partial Backbone Unfreezing**: Kept the base ImageNet weights frozen for edge detection, but unfroze the top EfficientNet blocks so the CNN could actively learn GAN-generated visual artifacts.
@@ -17,7 +17,7 @@ This project is an advanced deep learning implementation developed to solve the 
 
 ---
 
-## 🏗️ How it Works (The Architecture)
+##  How it Works (The Architecture)
 
 The system processes video files through a multi-stage spatiotemporal pipeline:
 
@@ -28,7 +28,7 @@ The system processes video files through a multi-stage spatiotemporal pipeline:
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 * **Logic**: PyTorch, Torchvision
 * **Spatial Backbone**: EfficientNet-B0
@@ -38,7 +38,7 @@ The system processes video files through a multi-stage spatiotemporal pipeline:
 
 ---
 
-## 📊 Sample Use Case: The Generalization Gap
+##  Sample Use Case: The Generalization Gap
 
 When tested against different tiers of synthetic media:
 
@@ -47,7 +47,7 @@ When tested against different tiers of synthetic media:
 
 ---
 
-## 🔗 Live Demo
+##  Live Demo
 
 Try it out on Hugging Face Spaces: [Deepfake Video Detection](https://huggingface.co/spaces/Sarvjais12/Deepfake_Video_Detection)
 
